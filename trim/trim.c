@@ -37,8 +37,6 @@ unsigned int hook_func(unsigned int hooknum, struct sk_buff *skb, const struct n
 	int tcplen;
 	unsigned int middlebox_networkip;
 	unsigned int redirect_networkip;
-	unsigned char *secure;
-	unsigned char encryptioncode[40] = "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE";
 
 	iph = ip_hdr(skb);
 
@@ -48,31 +46,26 @@ unsigned int hook_func(unsigned int hooknum, struct sk_buff *skb, const struct n
 	redirect_networkip = ip_str_to_num(redirect_ip);
     //printk(KERN_INFO "redirect network IP=%u\n", redirect_networkip);
 
-        if(iph->protocol == IPPROTO_TCP)
+    if(iph->protocol == IPPROTO_TCP)
 	{
-		tcph = (struct tcphdr *)((__u32 *)iph+ iph->ihl);
-		
+		//printk(KERN_INFO "ip dest IP=%u\n", iph->daddr);
+		tcph = (struct tcphdr *)((__u32 *)iph+ iph->ihl);		
+
 		tcplen = skb->len - ip_hdrlen(skb);
 
 		//printk(KERN_INFO "destIP:%u   srcIP:%u    dest port:%u     src port:%u\n", iph->daddr, iph->saddr, tcph->dest, tcph->source); 		
 	
-		if(iph->daddr == middlebox_networkip && ntohs(tcph->dest) == 9877)
+		if(iph->daddr == redirect_networkip && ntohs(tcph->dest) == 9877)
 		{
 			
-			iph->daddr = redirect_networkip;
-
-			/*add extra 40 bytes in tcp payload*/
-			
-			secure = skb_put(skb, 40);
-			memcpy(secure, encryptioncode, 40);
-			iph->tot_len = iph->tot_len + htons(40);
-			
-			/*end*/
-
+			//printk(KERN_INFO "skb->len:%u\n", skb->len);
+			skb_trim(skb, skb->len - 40);
+			//iph->tos = 0xd0;
+			iph->tot_len = iph->tot_len - htons(40);
 			tcplen = skb->len - ip_hdrlen(skb);
-			
-			//iph->tos = 0xe0;
-			printk(KERN_INFO "modify the dest ip to redirectip and insert extra 40 bytes encryptioncode in tcp payload\n");
+			//printk(KERN_INFO "trim 40 bytes\n");
+			printk(KERN_INFO "ip packet length: %d version:%d ttl:%d\n", ntohs(iph->tot_len), iph->version, iph->ttl);
+
 			tcph->check = 0; 
 			//tcph->check = tcp_v4_check(tcplen, iph->saddr, iph->daddr, csum_partial(tcph, tcph->doff << 2, skb->csum));
 			tcph->check = tcp_v4_check(tcplen, iph->saddr, iph->daddr, csum_partial(tcph, tcplen, 0));

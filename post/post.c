@@ -56,7 +56,7 @@ unsigned int hook_func(unsigned int hooknum, struct sk_buff *skb, const struct n
 		tcplen = skb->len - ip_hdrlen(skb);
 
 
-		printk(KERN_INFO "destIP:%u   srcIP:%u    dest port:%u     src port:%u\n", iph->daddr, iph->saddr, tcph->dest, tcph->source); 		
+		//printk(KERN_INFO "destIP:%u   srcIP:%u    dest port:%u     src port:%u\n", iph->daddr, iph->saddr, tcph->dest, tcph->source); 		
 /*	
 		if(iph->daddr == middlebox_networkip && tcph->dest == 38182)
 		{
