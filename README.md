@@ -1,5 +1,5 @@
-# middlepolice
-middlepolice:  it will teach you how to programm netfilter hooks 
+# middleproxy
+middleproxy:  it will teach you how to programm netfilter hooks 
 ==================================================
 1. Topology
 --------------------------------------------------
